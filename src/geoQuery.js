@@ -17,14 +17,15 @@ var GeoQuery = function (firebaseRef, queryCriteria) {
    * @param {string} key The key of the location for which to fire the callbacks.
    * @param {?Array.<number>} location The location as [latitude, longitude] pair
    * @param {?double} distanceFromCenter The distance from the center or null.
+   * @param {?Firebase DataSnapshot} snapshot A snapshot of the data stored for this location.
    */
-  function _fireCallbacksForKey(eventType, key, location, distanceFromCenter) {
+  function _fireCallbacksForKey(eventType, key, location, distanceFromCenter, snapshot) {
     _callbacks[eventType].forEach(function(callback) {
       if (typeof location === "undefined" || location === null) {
         callback(key, null, null);
       }
       else {
-        callback(key, location, distanceFromCenter);
+        callback(key, location, distanceFromCenter, snapshot);
       }
     });
   }
@@ -128,8 +129,9 @@ var GeoQuery = function (firebaseRef, queryCriteria) {
    *
    * @param {string} key The key of the geofire location.
    * @param {?Array.<number>} location The location as [latitude, longitude] pair.
+   * @param {Firebase DataSnapshot} snapshot A snapshot of the data stored for this location.
    */
-  function _updateLocation(key, location) {
+  function _updateLocation(key, location, snapshot) {
     validateLocation(location);
     // Get the key and location
     var distanceFromCenter, isInQuery;
@@ -145,16 +147,17 @@ var GeoQuery = function (firebaseRef, queryCriteria) {
       location: location,
       distanceFromCenter: distanceFromCenter,
       isInQuery: isInQuery,
-      geohash: encodeGeohash(location, g_GEOHASH_PRECISION)
+      geohash: encodeGeohash(location, g_GEOHASH_PRECISION),
+      snapshot: snapshot
     };
 
     // Fire the "key_entered" event if the provided key has entered this query
     if (isInQuery && !wasInQuery) {
-      _fireCallbacksForKey("key_entered", key, location, distanceFromCenter);
+      _fireCallbacksForKey("key_entered", key, location, distanceFromCenter, snapshot);
     } else if (isInQuery && oldLocation !== null && (location[0] !== oldLocation[0] || location[1] !== oldLocation[1])) {
-      _fireCallbacksForKey("key_moved", key, location, distanceFromCenter);
+      _fireCallbacksForKey("key_moved", key, location, distanceFromCenter, snapshot);
     } else if (!isInQuery && wasInQuery) {
-      _fireCallbacksForKey("key_exited", key, location, distanceFromCenter);
+      _fireCallbacksForKey("key_exited", key, location, distanceFromCenter, snapshot);
     }
   }
 
