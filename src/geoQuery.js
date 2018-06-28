@@ -194,7 +194,7 @@ var GeoQuery = function (firebaseRef, queryCriteria) {
     delete _locationsTracked[key];
     if (typeof locationDict !== "undefined" && locationDict.isInQuery) {
       var distanceFromCenter = (currentLocation) ? GeoFire.distance(currentLocation, _center) : null;
-      _fireCallbacksForKey("key_exited", key, currentLocation, distanceFromCenter);
+      _fireCallbacksForKey("key_exited", key, currentLocation, distanceFromCenter, locationDict.snapshot);
     }
   }
 
@@ -394,12 +394,12 @@ var GeoQuery = function (firebaseRef, queryCriteria) {
 
       // If the location just left the query, fire the "key_exited" callbacks
       if (wasAlreadyInQuery && !locationDict.isInQuery) {
-        _fireCallbacksForKey("key_exited", key, locationDict.location, locationDict.distanceFromCenter);
+        _fireCallbacksForKey("key_exited", key, locationDict.location, locationDict.distanceFromCenter, locationDict.snapshot);
       }
 
       // If the location just entered the query, fire the "key_entered" callbacks
       else if (!wasAlreadyInQuery && locationDict.isInQuery) {
-        _fireCallbacksForKey("key_entered", key, locationDict.location, locationDict.distanceFromCenter);
+        _fireCallbacksForKey("key_entered", key, locationDict.location, locationDict.distanceFromCenter, locationDict.snapshot);
       }
     }
 
